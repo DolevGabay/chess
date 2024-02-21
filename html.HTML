@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client</title>
+</head>
+<body>
+    <textarea id="messageBox" rows="10" cols="50"></textarea><br>
+    <button onclick="sendMessage()">Send Message</button>
+    
+    <script>
+        const socket = new WebSocket("ws://localhost:5226/start-game");
+
+        socket.onopen = function(event) {
+            console.log("WebSocket connection opened.");
+        };
+
+        socket.onmessage = function(event) {
+            console.log("Received message: " + event.data);
+        };
+
+        socket.onclose = function(event) {
+            console.log("WebSocket connection closed.");
+        };
+
+        function sendMessage() {
+            const message = document.getElementById("messageBox").value;
+            socket.send(message);
+        }
+    </script>
+</body>
+</html>

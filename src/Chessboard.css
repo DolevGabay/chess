@@ -1,0 +1,39 @@
+.chessboard {
+  display: flex;
+  flex-direction: column;
+  width: 400px; /* Adjust the width as needed */
+  margin: 0 auto; /* Centers the chessboard horizontally */
+  margin-top: 10%; /* Adjust the top margin as needed */
+}
+
+
+.row {
+  display: flex;
+}
+
+.square {
+  width: 50px; /* Adjust the width and height as needed */
+  height: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #000;
+}
+
+.square {
+  cursor: pointer; /* Change cursor to pointer on hover */
+}
+
+.square:hover {
+  background-color: lightgray; /* Change background color on hover */
+}
+
+
+/* Styling for alternating colors */
+.white {
+  background-color: #f0d9b5; /* Light color */
+}
+
+.black {
+  background-color: #b58863; /* Dark color */
+}
