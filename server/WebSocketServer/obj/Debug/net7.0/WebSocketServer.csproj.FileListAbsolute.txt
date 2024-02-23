@@ -26,3 +26,4 @@
 /Users/dolevgabay/Desktop/My Projects/chess/server/WebSocketServer/obj/Debug/net7.0/WebSocketServer.pdb
 /Users/dolevgabay/Desktop/My Projects/chess/server/WebSocketServer/obj/Debug/net7.0/WebSocketServer.genruntimeconfig.cache
 /Users/dolevgabay/Desktop/My Projects/chess/server/WebSocketServer/obj/Debug/net7.0/ref/WebSocketServer.dll
+/Users/dolevgabay/Desktop/My Projects/chess/server/WebSocketServer/bin/Debug/net7.0/Newtonsoft.Json.dll

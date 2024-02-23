@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "M0dFMpl6L/SlDTEKfybwPIzeuw5ia9YlgcD46mdM166VXn4Nx8mRxOenTWusNiq5N4ICH1AERhs5+QYoalf+sg==",
+  "dgSpecHash": "olEBK7l+M3kXz4F0qi8EvXvx/sXux5SDP1+Jovgf7jZbwKbuTTogtjzAu+477fE+S+o9IOPPbSYyxIzPXbahBQ==",
   "success": true,
   "projectFilePath": "/Users/dolevgabay/Desktop/My Projects/chess/server/WebSocketServer/WebSocketServer.csproj",
   "expectedPackageFiles": [
@@ -14,6 +14,7 @@
     "/Users/dolevgabay/.nuget/packages/microsoft.extensions.options/2.2.0/microsoft.extensions.options.2.2.0.nupkg.sha512",
     "/Users/dolevgabay/.nuget/packages/microsoft.extensions.primitives/2.2.0/microsoft.extensions.primitives.2.2.0.nupkg.sha512",
     "/Users/dolevgabay/.nuget/packages/microsoft.net.http.headers/2.2.0/microsoft.net.http.headers.2.2.0.nupkg.sha512",
+    "/Users/dolevgabay/.nuget/packages/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg.sha512",
     "/Users/dolevgabay/.nuget/packages/system.buffers/4.5.0/system.buffers.4.5.0.nupkg.sha512",
     "/Users/dolevgabay/.nuget/packages/system.componentmodel.annotations/4.5.0/system.componentmodel.annotations.4.5.0.nupkg.sha512",
     "/Users/dolevgabay/.nuget/packages/system.memory/4.5.1/system.memory.4.5.1.nupkg.sha512",

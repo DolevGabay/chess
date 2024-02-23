@@ -1,80 +1,60 @@
 using System;
 using System.Net.WebSockets;
 using System.Text;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 public class WebSocketHandler
 {
-    public async Task HandleWebSocket(WebSocket socket)
+    public async Task HandleWebSocket(WebSocket socket, Game game, CancellationToken cancellationToken)
     {
         var buffer = new byte[1024 * 4];
         WebSocketReceiveResult result;
 
-        Board board = new Board();
-        Guid boardId = board.getBoardId();
-        string[,] boardState = board.getBoardToClient();
-
-        //print board
-        for (int i = 0; i < 8; i++)
+        try
         {
-            for (int j = 0; j < 8; j++)
+            do
             {
-                Console.Write(boardState[i, j] + " ");
-            }
-            Console.WriteLine();
-        }
-        
-        // Convert multi-dimensional array to jagged array
-        string[][] jaggedBoardState = ConvertToJaggedArray(boardState);
-        
-        // Create an anonymous object to represent the board info
-        var boardInfo = new
-        {
-            action = "newGame",
-            boardId = boardId,
-            boardState = jaggedBoardState
-        };
+                result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                if (result.MessageType == WebSocketMessageType.Text)
+                {
+                    var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
+                    Console.WriteLine($"Received message: {message}");
+                    JObject jsonObject = JObject.Parse(message);
 
-        // Serialize the anonymous object to JSON using System.Text.Json
-        var options = new JsonSerializerOptions { WriteIndented = true };
-        var boardInfoBytes = JsonSerializer.SerializeToUtf8Bytes(boardInfo, options);
+                    if(jsonObject["action"].ToString() == "availableMoves")
+                    {
+                        int row = jsonObject["row"].Value<int>(); // Extract the integer value
+                        int col = jsonObject["col"].Value<int>(); // Extract the integer value
+                        game.handleAvailableMoves(row, col);
+                    } 
+                    else if(jsonObject["action"].ToString() == "move")
+                    {
+                        int fromRow = jsonObject["fromRow"].Value<int>(); // Extract the integer value
+                        int fromCol = jsonObject["fromCol"].Value<int>(); // Extract the integer value
+                        int toRow = jsonObject["toRow"].Value<int>(); // Extract the integer value
+                        int toCol = jsonObject["toCol"].Value<int>(); // Extract the integer value
+                        game.handleMove(fromRow, fromCol, toRow, toCol);
+                    }
+                }
+            } while (!result.CloseStatus.HasValue && !cancellationToken.IsCancellationRequested);
 
-        // Send the serialized JSON data to the client
-        await socket.SendAsync(new ArraySegment<byte>(boardInfoBytes), WebSocketMessageType.Text, true, CancellationToken.None);
-
-        do
-        {
-            result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            if (result.MessageType == WebSocketMessageType.Text)
+            if (!cancellationToken.IsCancellationRequested)
             {
-                var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                Console.WriteLine($"Received message: {message}");
-
-                // Echo the message back to the client
-                await socket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), WebSocketMessageType.Text, true, CancellationToken.None);
-            }
-        } while (!result.CloseStatus.HasValue);
-
-        await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-    }
-    
-    // Method to convert multi-dimensional array to jagged array
-    private string[][] ConvertToJaggedArray(string[,] multiDimensionalArray)
-    {
-        int rows = multiDimensionalArray.GetLength(0);
-        int cols = multiDimensionalArray.GetLength(1);
-
-        string[][] jaggedArray = new string[rows][];
-        for (int i = 0; i < rows; i++)
-        {
-            jaggedArray[i] = new string[cols];
-            for (int j = 0; j < cols; j++)
-            {
-                jaggedArray[i][j] = multiDimensionalArray[i, j];
+                await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, cancellationToken);
             }
         }
-        return jaggedArray;
+        catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
+        {
+            // Handle the situation where the remote party closes the connection unexpectedly
+            Console.WriteLine("The remote party closed the WebSocket connection without completing the close handshake.");
+        }
+        catch (OperationCanceledException)
+        {
+            // Handle cancellation due to shutdown or other reasons
+            Console.WriteLine("WebSocket operation canceled.");
+        }
     }
 }
