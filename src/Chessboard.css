@@ -1,9 +1,17 @@
+/* Chessboard.css */
+
+.chessboard-body {
+  background-color: #f0d9b5; /* Set background color for Chessboard component */
+  color: #000;
+}
+
 .chessboard {
   display: flex;
   flex-direction: column;
   width: 400px; /* Adjust the width as needed */
   margin: 0 auto; /* Centers the chessboard horizontally */
   margin-top: 10%; /* Adjust the top margin as needed */
+  font-size: 20px;
 }
 
 .row {
@@ -26,7 +34,7 @@
 
 /* Styling for alternating colors */
 .white {
-  background-color: #f0d9b5; /* Light color */
+  background-color: #f0e3d2; /* Light color */
 }
 
 .black {

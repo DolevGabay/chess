@@ -42,6 +42,12 @@ app.Map("/join-game/{gameId}", async (HttpContext context) =>
             context.Response.StatusCode = 400;
             return;
         }
+
+        if(!gameEngine.gameExists(gameId))
+        {
+            context.Response.StatusCode = 404;
+            return;
+        }
         
         var socket = await context.WebSockets.AcceptWebSocketAsync();
         Console.WriteLine($"WebSocket for join-game connection established for game ID: {gameId}");

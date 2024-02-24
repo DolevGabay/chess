@@ -58,5 +58,4 @@ export class BoardUtils {
             console.error('Socket is undefined');
         }
     }
-    
 }

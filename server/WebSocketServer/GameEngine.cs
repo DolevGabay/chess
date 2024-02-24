@@ -34,6 +34,17 @@ public class GameEngine
             Console.WriteLine("Game does not exist");
         }
     }
+    public bool gameExists(string gameId)
+    {
+        foreach (Game game in games)
+        {
+            if (game.getGameId().ToString() == gameId)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
 
     public Game getGameById(string gameId)
     {

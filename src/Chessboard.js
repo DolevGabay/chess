@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Chessboard.css';
 import { BoardUtils } from './BoardUtils';
 
 const Chessboard = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const searchParams = new URLSearchParams(location.search);
     const mode = searchParams.get('mode');
     const gameToJoin = searchParams.get('gameId');
+    const username = searchParams.get('username');
 
     const [board, setBoard] = useState([]);
     const [playerID, setPlayerID] = useState(0);
@@ -21,8 +23,7 @@ const Chessboard = () => {
     const [gameStarted, setGameStarted] = useState(false);
 
     useEffect(() => {
-        console.log('Mode:', mode);
-        console.log('Game to join:', gameToJoin);
+        
         const connectToWebSocket = () => {
             let socketURL = '';
             if (mode === 'start') {
@@ -77,6 +78,12 @@ const Chessboard = () => {
             };
 
             ws.onerror = (error) => {
+                //check the status number of error
+                if (error.target.readyState === 3) {
+                    console.log('Game not found');
+                    alert('Game not found');
+                    navigate('/');
+                }
                 console.error('WebSocket error:', error);
             };
 
@@ -145,11 +152,12 @@ const Chessboard = () => {
     };
 
     return (
+        <div className="chessboard-body">
         <div className="chessboard">
-            <h1>Player ID: {playerID}</h1>
-            <h1>Game ID: {gameID}</h1>
+            <h1 style={{ color: 'Black', fontSize: '20px' }}>Player: {username}</h1>
+            <h1 style={{ color: 'Black', fontSize: '20px' }}>Game ID: {gameID}</h1>
             {home ? <h1>Home</h1> : <h2>Not Home</h2>}
-            {homeTurn ? <h1>Home Turn</h1> : <h2>Not Home Turn</h2>}
+            {/*homeTurn ? <h1>Home Turn</h1> : <h2>Not Home Turn</h2>*/}
             {(home && homeTurn) ? <h1>Your Turn</h1> : (home && !homeTurn) ? <h2>Opponent's Turn</h2> : (!home && !homeTurn) ? <h1>Your Turn</h1> : <h2>Opponent's Turn</h2>}
             {board.map((row, i) => (
                 <div key={i} className="row">
@@ -167,6 +175,7 @@ const Chessboard = () => {
                 </div>
             ))}
             {gameStarted ? <h1>Game Started</h1> : <h2>waitting for the other player</h2>}
+        </div>
         </div>
     );
 };
