@@ -17,6 +17,9 @@ app.Map("/start-game", async (HttpContext context) =>
     {
         var socket = await context.WebSockets.AcceptWebSocketAsync();
         Console.WriteLine("WebSocket for start-game connection established");
+
+        string Origin = context.Request.Headers["Origin"];
+        Console.WriteLine($"WebSocket connection established from host: {Origin} for start-game");
         
         Player player = new Player(socket);
         //gameEngine.addPlayer(player);
@@ -48,12 +51,24 @@ app.Map("/join-game/{gameId}", async (HttpContext context) =>
             context.Response.StatusCode = 404;
             return;
         }
+
+        Game game = gameEngine.getGameById(gameId);
+
+        if (game.hasTwoPlayers())
+        {
+            Console.WriteLine("Game already has two players");
+            context.Response.StatusCode = 400;
+            return;
+        }
         
         var socket = await context.WebSockets.AcceptWebSocketAsync();
         Console.WriteLine($"WebSocket for join-game connection established for game ID: {gameId}");
+
+        string Origin = context.Request.Headers["Origin"];
+        Console.WriteLine($"WebSocket connection established from host: {Origin} for join-game");
+
         Player player = new Player(socket);
         gameEngine.addPlayerToGame(gameId, player);
-        Game game = gameEngine.getGameById(gameId);
         
         var handler = new WebSocketHandler();
         await handler.HandleWebSocket(socket, game, CancellationToken.None); 
@@ -63,6 +78,5 @@ app.Map("/join-game/{gameId}", async (HttpContext context) =>
         context.Response.StatusCode = 400;
     }
 });
-
 
 app.Run();
