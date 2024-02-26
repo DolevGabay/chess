@@ -148,3 +148,38 @@ a{color:inherit;text-decoration:none}
 .foot-lnk{
 	text-align:center;
 }
+
+.header {
+	font-size: 30px; /* Adjust the font size as needed */
+	font-weight: bold; /* Set the font weight to bold */
+	color: #333; /* Set the text color */
+	text-align: center; /* Align the text to the center */
+	margin-top: -15%;
+	margin-bottom: 10%;
+  }
+
+.loginButton {
+	background-color: #f0d9b5; /* Green */
+  border: none;
+  color: rgb(0, 0, 0);
+  padding: 15px 32px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-left: 40%;
+  cursor: pointer;
+  border-radius: 25px;
+}  
+
+.foot-lnk {
+  display: flex;
+  justify-content: center; /* Horizontally center the items */
+  align-items: center; /* Vertically center the items */
+}
+
+.foot-lnk label {
+  margin-right: 10px; /* Add some space between the label and button */
+}
+
+  
