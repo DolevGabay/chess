@@ -8,7 +8,7 @@ using Newtonsoft.Json.Linq;
 
 public class WebSocketHandler
 {
-    public async Task HandleWebSocket(WebSocket socket, Game game, CancellationToken cancellationToken)
+    public async Task HandleWebSocket(WebSocket socket, GameEngine gameEngine, Game game, CancellationToken cancellationToken)
     {
         var buffer = new byte[1024 * 4];
         WebSocketReceiveResult result;
@@ -37,6 +37,14 @@ public class WebSocketHandler
                         int toRow = jsonObject["toRow"].Value<int>(); // Extract the integer value
                         int toCol = jsonObject["toCol"].Value<int>(); // Extract the integer value
                         game.handleMove(fromRow, fromCol, toRow, toCol);
+                    }
+                    else if(jsonObject["action"].ToString() == "signup")
+                    {
+                        gameEngine.handleSignup(socket, jsonObject["username"].ToString(), jsonObject["password"].ToString());
+                    }
+                    else if(jsonObject["action"].ToString() == "signin")
+                    {
+                        gameEngine.handleSignin(socket, jsonObject["username"].ToString(), jsonObject["password"].ToString());
                     }
                 }
             } while (!result.CloseStatus.HasValue && !cancellationToken.IsCancellationRequested);

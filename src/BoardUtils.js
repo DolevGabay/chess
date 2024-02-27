@@ -1,3 +1,5 @@
+import { useNavigate } from 'react-router-dom';
+
 export class BoardUtils {
     static setCellFigure(letter, color) {
         if (letter === 'K' && color === 'W') {
@@ -58,4 +60,47 @@ export class BoardUtils {
             console.error('Socket is undefined');
         }
     }
+
+    static async login(username, password, action) {
+        return new Promise((resolve, reject) => {
+            const ws = new WebSocket('ws://localhost:5226/login');
+    
+            ws.onopen = () => {
+                console.log('WebSocket connection opened');
+                const data = {
+                    username: username,
+                    password: password,
+                    action: action
+                };
+                ws.send(JSON.stringify(data));
+            }
+    
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                ws.close(); // Close the connection on error
+                reject(error);
+            }
+    
+            ws.onclose = () => {
+                console.log('WebSocket connection closed');
+            }
+    
+            ws.onmessage = (message) => {
+                console.log('Received message:', message.data);
+                const data = JSON.parse(message.data);
+                if(data.success === false) {
+                    ws.close(); // Close the connection if username exists
+                    resolve("Invalid username or password")
+                }
+                else {
+                    const username = data.username;
+                    console.log('Username:', username);
+                    resolve(username);
+                    ws.close(); // Close the connection on success
+                }
+            }
+        });
+    }
+    
+    
 }

@@ -71,8 +71,7 @@ public class Game{
 
     public async void handleJoinGame()
     {
-        string[,] boardState = board.getBoardToClient();
-        string[][] jaggedBoardState = ConvertToJaggedArray(boardState);
+        string[][] jaggedBoardState = board.getBoardToClient2Perspective();
         Guid playerId = player2.getPlayerId();
 
         var boardInfo = new
@@ -105,24 +104,32 @@ public class Game{
 
     public void handleAvailableMoves(int row, int col)
     {
+        if (!homeTurn)
+        {
+            var regularIndices = this.ConvertToRegularPerspective(row, col);
+
+            // Extract regular row and column indices
+            row = regularIndices.Item1;
+            col = regularIndices.Item2;
+        }
+
         int[][] availableMoves = board.getAvailableMovesBoard(row, col, homeTurn);
         List<int[]> availableMovesList = new List<int[]>(availableMoves);
 
-        foreach (int[] move in availableMoves)
+        // Loop through available moves
+        for (int i = 0; i < availableMoves.Length; i++)
         {
-            Piece piece = board.getPiece(move[0], move[1]);
-            if (piece.getPieceColor() == "W" && homeTurn)
+            int[] move = availableMoves[i];
+            // If it's player 1's turn and the move is from player 2's perspective
+            if (!homeTurn)
             {
-                availableMovesList.Remove(move);
-            }
-            else if (piece.getPieceColor() == "B" && !homeTurn)
-            {
-                availableMovesList.Remove(move);
+                // Convert the move indices to player 2's perspective
+                var player2Indices = ConvertToPlayer2Perspective(move[0], move[1]);
+                // Update the move with player 2's perspective indices
+                availableMoves[i] = player2Indices;
             }
         }
 
-        availableMoves = availableMovesList.ToArray();
-        
         var availableMovesInfo = new
         {
             action = "availableMoves",
@@ -138,9 +145,31 @@ public class Game{
         playerSocket.SendAsync(new ArraySegment<byte>(availableMovesBytes), WebSocketMessageType.Text, true, CancellationToken.None);
     }
 
+    // Function to convert indices to player 2's perspective
+    public int[] ConvertToPlayer2Perspective(int regularRow, int regularCol)
+    {
+         // Assuming you have a method to get the number of rows
+        int player2Row = 8 - 1 - regularRow;
+        int player2Col = 8 - 1 -regularCol;
+        return new int[] { player2Row, player2Col };
+    }
+
     public void handleMove(int startRow, int startCol, int endRow, int endCol)
     { 
+        if (!homeTurn)
+        {
+            var regularStartIndices = this.ConvertToRegularPerspective(startRow, startCol);
+            var regularEndIndices = this.ConvertToRegularPerspective(endRow, endCol);
+
+            // Extract regular row and column indices
+            startRow = regularStartIndices.Item1;
+            startCol = regularStartIndices.Item2;
+            endRow = regularEndIndices.Item1;
+            endCol = regularEndIndices.Item2;
+        }
+
         bool moved = board.movePiece(startRow, startCol, endRow, endCol);
+
         if(moved == true && board.kingIsDead())
         {
             Console.WriteLine("Game over here1");
@@ -161,10 +190,13 @@ public class Game{
         }
 
         homeTurn = !homeTurn;
+
         string[,] boardState = board.getBoardToClient();
         string[][] jaggedBoardState = ConvertToJaggedArray(boardState);
-
-        var boardInfo = new
+        
+        string[][] jaggedBoardStateForPlayer2 = board.getBoardToClient2Perspective();    
+        
+        var boardInfoPlayer1 = new
         {
             action = "movedPiece",
             boardState = jaggedBoardState,
@@ -172,11 +204,20 @@ public class Game{
             homeTurn = homeTurn
         };
 
+        var boardInfoPlayer2 = new
+        {
+            action = "movedPiece",
+            boardState = jaggedBoardStateForPlayer2,
+            moved = moved,
+            homeTurn = homeTurn
+        };
+
         var options = new JsonSerializerOptions { WriteIndented = true };
-        var boardInfoBytes = JsonSerializer.SerializeToUtf8Bytes(boardInfo, options);
+        var boardInfoBytes = JsonSerializer.SerializeToUtf8Bytes(boardInfoPlayer1, options);
+        var boardInfoBytesPlayer2 = JsonSerializer.SerializeToUtf8Bytes(boardInfoPlayer2, options);
 
         player1.getPlayerSocket().SendAsync(new ArraySegment<byte>(boardInfoBytes), WebSocketMessageType.Text, true, CancellationToken.None);
-        player2.getPlayerSocket().SendAsync(new ArraySegment<byte>(boardInfoBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        player2.getPlayerSocket().SendAsync(new ArraySegment<byte>(boardInfoBytesPlayer2), WebSocketMessageType.Text, true, CancellationToken.None);
     }
 
     public Guid getGameId()
@@ -200,5 +241,51 @@ public class Game{
             }
         }
         return jaggedArray;
+    }
+
+    private (int, int) ConvertToRegularPerspective(int rowFromP2, int colFromP2)
+    {
+        // Invert row index to convert to regular perspective
+        int regularRow = 8 - 1 - rowFromP2;
+        // Columns remain the same
+        int regularCol = 8 - 1 - colFromP2;
+
+        return (regularRow, regularCol);
+    }
+
+    public bool hasTwoPlayers()
+    {
+        return player1 != null && player2 != null;
+    }
+
+    public async void reconnectPlayer1(Player player)
+    {
+        player1 = player;
+
+        string[,] boardState = board.getBoardToClient();
+
+        Guid playerId = player1.getPlayerId();
+        
+        // Convert multi-dimensional array to jagged array
+        string[][] jaggedBoardState = ConvertToJaggedArray(boardState);
+        
+        // Create an anonymous object to represent the board info
+        var boardInfo = new
+        {
+            action = "newGame",
+            gameId = gameId,
+            playerId = playerId,
+            boardState = jaggedBoardState,
+            home = homeTurn,
+            gameStarted = false
+        };
+
+        // Serialize the anonymous object to JSON using System.Text.Json
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var boardInfoBytes = JsonSerializer.SerializeToUtf8Bytes(boardInfo, options);
+
+        // Send the serialized JSON data to the client
+        await player1.getPlayerSocket().SendAsync(new ArraySegment<byte>(boardInfoBytes), WebSocketMessageType.Text, true, CancellationToken.None);
+        Console.WriteLine("reconnected player 1");
     }
 }

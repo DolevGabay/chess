@@ -72,6 +72,30 @@ public class Board
         return boardToClient;
     }
 
+    public string[][] getBoardToClient2Perspective()
+    {
+        string[,] boardState = this.getBoardToClient();
+        int rows = 8;
+        int cols = 8;
+        
+        // Convert string[,] to string[][]
+        string[][] jaggedBoardState = new string[rows][];
+        for (int i = 0; i < rows; i++)
+        {
+            jaggedBoardState[i] = new string[cols];
+            for (int j = 0; j < cols; j++)
+            {
+                // Invert row index to send the board upside down
+                int invertedRowIndex = rows - 1 - i;
+                int invertedColIndex = cols - 1 - j;
+                jaggedBoardState[i][j] = boardState[invertedRowIndex, invertedColIndex];
+            }
+        }
+
+        return jaggedBoardState;
+    }
+
+
     public Guid getBoardId()
     {
         return boardId;
@@ -100,7 +124,7 @@ public class Board
         if (endPiece.getPieceType() != "E")
         {
             deadPieces.Add(endPiece);
-            Console.WriteLine("Piece captured: " + endPiece.getPiece() + " " + endPiece.getPieceColor() + " " + endPiece.getPieceType());
+            Console.WriteLine("Piece captured: " + endPiece.getPiece());
         }
         return true;
     }
@@ -164,34 +188,35 @@ public class Board
 
     public int[][] getAvailableMovesPawn(int row, int col, bool homeTurn)
     {
+        Console.WriteLine("row: " + row + " col: " + col + " homeTurn: " + homeTurn);
         List<int[]> availableMovesList = new List<int[]>(); // Use a list to store available moves
         bool pawnMoved = board[row, col].getHasMoved();
         Console.WriteLine("Pawn moved?: " + pawnMoved);
         if (homeTurn)
         {
-            if(board[row - 1, col].getPieceType() == "E")
+            if(row -1 >= 0 && board[row - 1, col].getPieceType() == "E")
             {
                 
                 availableMovesList.Add(new int[] { row - 1, col }); // Move one square ahead
-                if (!pawnMoved && board[row - 2, col].getPieceType() == "E")
+                if (!pawnMoved && row - 2 >= 0 && board[row - 2, col].getPieceType() == "E")
                 {
                     availableMovesList.Add(new int[] { row - 2, col }); // Move two squares ahead
                 }
-                if (board[row - 1, col - 1].getPieceColor() == "B" )
+                if (col - 1 >= 0 && row -1 >= 0 && board[row - 1, col - 1].getPieceColor() == "B" )
                 {
                     availableMovesList.Add(new int[] { row - 1, col - 1 }); // Move one square ahead
                 }
-                if (board[row - 1, col + 1].getPieceColor() == "B" )
+                if (col + 1 <= 7 && row -1 >= 0 && board[row - 1, col + 1].getPieceColor() == "B" )
                 {
                     availableMovesList.Add(new int[] { row - 1, col + 1 }); // Move one square ahead
                 }
             }
-            else if (board[row - 1, col - 1].getPieceColor() == "B")
+            else if (col - 1 >= 0 && row -1 >= 0 && board[row - 1, col - 1].getPieceColor() == "B")
             {
                 
                 availableMovesList.Add(new int[] { row - 1, col - 1 }); // Move one square ahead
             }
-            else if (board[row - 1, col + 1].getPieceColor() == "B")
+            else if ( col + 1 <= 7 && row -1 >= 0 && board[row - 1, col + 1].getPieceColor() == "B")
             {
                 
                 availableMovesList.Add(new int[] { row - 1, col + 1 }); // Move one square ahead
@@ -199,27 +224,27 @@ public class Board
         }
         else
         {
-            if (board[row + 1, col].getPieceType() == "E")
+            if (row + 1 <= 7 && board[row + 1, col].getPieceType() == "E")
             {
                 availableMovesList.Add(new int[] { row + 1, col }); // Move one square ahead
-                if (!pawnMoved && board[row + 2, col].getPieceType() == "E")
+                if (!pawnMoved && row + 2 <= 7 && board[row + 2, col].getPieceType() == "E")
                 {
                     availableMovesList.Add(new int[] { row + 2, col }); // Move two squares ahead
                 }
-                if (board[row + 1, col - 1].getPieceColor() == "W")
+                if (col - 1 >= 0 && row +2 <= 7 && board[row + 1, col - 1].getPieceColor() == "W")
                 {
                     availableMovesList.Add(new int[] { row + 1, col - 1 }); // Move one square ahead
                 }
-                if (board[row + 1, col + 1].getPieceColor() == "W")
+                if (col + 1 <= 7 && row +1 <= 7 &&board[row + 1, col + 1].getPieceColor() == "W")
                 {
                     availableMovesList.Add(new int[] { row + 1, col + 1 }); // Move one square ahead
                 }
             }
-            else if (board[row + 1, col - 1].getPieceColor() == "W")
+            else if (col - 1 >= 0 && row +1 <= 7 && board[row + 1, col - 1].getPieceColor() == "W")
             {
                 availableMovesList.Add(new int[] { row + 1, col - 1 }); // Move one square ahead
             }
-            else if (board[row + 1, col + 1].getPieceColor() == "W")
+            else if (col + 1 <= 7 && row + 1 <= 7 && board[row + 1, col + 1].getPieceColor() == "W")
             {
                 availableMovesList.Add(new int[] { row + 1, col + 1 }); // Move one square ahead
             }
@@ -349,7 +374,11 @@ public class Board
             // Check if the new position is within the board boundaries
             if (newRow >= 0 && newRow < boardSize && newCol >= 0 && newCol < boardSize)
             {
-                availableMovesList.Add(new int[] { newRow, newCol });
+                // Check if the new position is empty or contains an opponent's piece
+                if (board[newRow, newCol].getPieceType() == "E" || board[newRow, newCol].getPieceColor() != board[row, col].getPieceColor())
+                {
+                    availableMovesList.Add(new int[] { newRow, newCol });
+                }
             }
         }
 
@@ -545,7 +574,11 @@ public class Board
             // Check if the new position is within the board boundaries
             if (newRow >= 0 && newRow < boardSize && newCol >= 0 && newCol < boardSize)
             {
-                availableMovesList.Add(new int[] { newRow, newCol });
+                // Check if the new position is empty or occupied by an opponent's piece
+                if (board[newRow, newCol].getPieceType() == "E" || board[newRow, newCol].getPieceColor() != board[row, col].getPieceColor())
+                {
+                    availableMovesList.Add(new int[] { newRow, newCol });
+                }
             }
         }
 

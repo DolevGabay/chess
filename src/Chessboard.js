@@ -27,9 +27,11 @@ const Chessboard = () => {
         const connectToWebSocket = () => {
             let socketURL = '';
             if (mode === 'start') {
-                socketURL = 'ws://localhost:5226/start-game';
+                socketURL = `ws://localhost:5226/start-game?username=${username}`;
             } else if (mode === 'join') {
                 socketURL = 'ws://localhost:5226/join-game';
+            } else if(mode === 'last-game') {
+                socketURL = `ws://localhost:5226/last-game?username=${username}`;
             } else {
                 console.error('Invalid mode:', mode);
                 return;
@@ -51,10 +53,10 @@ const Chessboard = () => {
                 if (data.action === 'newGame') {
                     console.log('Game started');
                     setBoard(data.boardState);
-                    setPlayerID(data.playerId);
                     setGameID(data.gameId);
                     setHome(data.home);
                     setGameStarted(data.gameStarted);
+                    setPlayerID(data.playerId);
                 } else if (data.action === 'availableMoves') {
                     console.log('Available moves:', data.availableMoves);
                     setAvailableMoves(data.availableMoves);
@@ -154,11 +156,9 @@ const Chessboard = () => {
     return (
         <div className="chessboard-body">
         <div className="chessboard">
-            <h1 style={{ color: 'Black', fontSize: '20px' }}>Player: {username}</h1>
+            <h1 style={{ color: 'Black', fontSize: '20px' }}>Player: {username != "" ? username : "Guest"}</h1>
             <h1 style={{ color: 'Black', fontSize: '20px' }}>Game ID: {gameID}</h1>
-            {home ? <h1>Home</h1> : <h2>Not Home</h2>}
-            {/*homeTurn ? <h1>Home Turn</h1> : <h2>Not Home Turn</h2>*/}
-            {(home && homeTurn) ? <h1>Your Turn</h1> : (home && !homeTurn) ? <h2>Opponent's Turn</h2> : (!home && !homeTurn) ? <h1>Your Turn</h1> : <h2>Opponent's Turn</h2>}
+            {home ? <h2>Your Color: White</h2> : <h2>Your Color: Black</h2>}
             {board.map((row, i) => (
                 <div key={i} className="row">
                     {row.map((piece, j) => (
@@ -174,7 +174,11 @@ const Chessboard = () => {
                     ))}
                 </div>
             ))}
-            {gameStarted ? <h1>Game Started</h1> : <h2>waitting for the other player</h2>}
+            <div id="notification-modal" className={gameStarted ? "notification-modal hidden" : "notification-modal"}>
+            <h2>Waiting for the other player</h2>
+            <h3>Game ID: {gameID}</h3>
+            </div>
+            {(home && homeTurn) ? <h2>Your Turn</h2> : (home && !homeTurn) ? <h2>Opponent's Turn</h2> : (!home && !homeTurn) ? <h2>Your Turn</h2> : <h2>Opponent's Turn</h2>}
         </div>
         </div>
     );
