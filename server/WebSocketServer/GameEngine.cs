@@ -195,4 +195,17 @@ public class GameEngine
             await socket.SendAsync(new ArraySegment<byte>(boardInfoBytes), WebSocketMessageType.Text, true, CancellationToken.None);
         }
     }
+
+    public void removeGame(Guid gameId)
+    {
+        Console.WriteLine("Removing game with id: " + gameId);
+        for (int i = games.Count - 1; i >= 0; i--)
+        {
+            if (games[i].getGameId() == gameId)
+            {
+                games.RemoveAt(i);
+            }
+        }
+    }
+
 }

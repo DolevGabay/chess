@@ -102,7 +102,7 @@ const Home = () => {
                 <div className="foot-lnk">
                   <label htmlFor="tab-1">Already Member?</label>
                 </div>
-                <button className="loginButton" onClick={() => navigate('/login')}>Sign-in/up</button>
+                <button className="loginButton" onClick={() => navigate('/login')}>login</button>
               </div>
             </>
           )}

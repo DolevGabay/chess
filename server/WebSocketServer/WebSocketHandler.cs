@@ -51,17 +51,17 @@ public class WebSocketHandler
 
             if (!cancellationToken.IsCancellationRequested)
             {
-                await socket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, cancellationToken);
+                gameEngine.removeGame(game.getGameId());
+                game.removePlayer(socket);
+                Console.WriteLine("WebSocket closed");
             }
         }
         catch (WebSocketException ex) when (ex.WebSocketErrorCode == WebSocketError.ConnectionClosedPrematurely)
         {
-            // Handle the situation where the remote party closes the connection unexpectedly
             Console.WriteLine("The remote party closed the WebSocket connection without completing the close handshake.");
         }
         catch (OperationCanceledException)
         {
-            // Handle cancellation due to shutdown or other reasons
             Console.WriteLine("WebSocket operation canceled.");
         }
     }

@@ -10,8 +10,9 @@
   flex-direction: column;
   width: 400px; /* Adjust the width as needed */
   margin: 0 auto; /* Centers the chessboard horizontally */
-  margin-top: 10%; /* Adjust the top margin as needed */
+  margin-top: 5%; /* Adjust the top margin as needed */
   font-size: 20px;
+  border-color: #000;
 }
 
 .row {
@@ -71,5 +72,47 @@
 .hidden {
   display: none;
 }
+
+.player-info {
+  background-color: #f0e3d2;
+  border: 2px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-color: #000;
+}
+
+.info-row {
+  margin-bottom: 10px; /* Adjust this value to increase or decrease space between rows */
+}
+
+.info-label {
+  font-weight: bold;
+  color: #333333;
+  width: 100px;
+  display: inline-block;
+}
+
+.info-value {
+  color: #555555;
+}
+
+.quit-button {
+  background-color: #fa7058;
+  color: #ffffff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.quit-button:hover {
+  background-color: #cc4c3d;
+}
+
+
+
+
 
 

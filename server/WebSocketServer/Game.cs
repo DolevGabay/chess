@@ -227,11 +227,6 @@ public class Game{
         player1.getPlayerSocket().SendAsync(new ArraySegment<byte>(boardInfoBytes), WebSocketMessageType.Text, true, CancellationToken.None);
         player2.getPlayerSocket().SendAsync(new ArraySegment<byte>(boardInfoBytesPlayer2), WebSocketMessageType.Text, true, CancellationToken.None);
     }
-
-    public Guid getGameId()
-    {
-        return gameId;
-    }
     
     // Method to convert multi-dimensional array to jagged array
     private string[][] ConvertToJaggedArray(string[,] multiDimensionalArray)
@@ -295,5 +290,60 @@ public class Game{
         // Send the serialized JSON data to the client
         await player1.getPlayerSocket().SendAsync(new ArraySegment<byte>(boardInfoBytes), WebSocketMessageType.Text, true, CancellationToken.None);
         Console.WriteLine("reconnected player 1");
+    }
+
+    public void removePlayer(WebSocket playerSocket)
+    {
+        var quitNotify = new
+        {
+            action = "quit",
+            message = "Your opponent has quit the game"
+        };
+
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var message = JsonSerializer.SerializeToUtf8Bytes(quitNotify, options);
+
+        if(player1 != null && player1.getPlayerSocket() == playerSocket)
+        {
+            player1 = null;
+            if(player2 != null && player2.getUser() != null)
+            {
+                player2.getUser().scorePoint();
+            }
+            if(player2 != null)
+            {
+                player2.getPlayerSocket().SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, CancellationToken.None);
+                player2.getPlayerSocket().CloseAsync(WebSocketCloseStatus.NormalClosure, "Player 1 has quit the game", CancellationToken.None);
+            }
+        }
+        else if(player2 != null && player2.getPlayerSocket() == playerSocket)
+        {
+            player2 = null;
+            if(player1 != null && player1.getUser() != null)
+            {
+                player1.getUser().scorePoint();
+            }
+
+            if(player1 != null)
+            {
+                player1.getPlayerSocket().SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, CancellationToken.None);
+                player1.getPlayerSocket().CloseAsync(WebSocketCloseStatus.NormalClosure, "Player 2 has quit the game", CancellationToken.None);
+            }
+        }
+    }
+
+    public Guid getGameId()
+    {
+        return gameId;
+    }
+
+    public Player getPlayer1()
+    {
+        return player1;
+    }
+
+    public Player getPlayer2()
+    {
+        return player2;
     }
 }

@@ -35,4 +35,9 @@ public class Player
     {
         return user;
     }
+
+    public WebSocket getSocket()
+    {
+        return socket;
+    }
 }

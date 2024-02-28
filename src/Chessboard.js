@@ -73,6 +73,11 @@ const Chessboard = () => {
                     socket.close();
                 } else if (data.action === 'gameStarted'){
                     setGameStarted(true);
+                } else if (data.action === 'quit'){
+                    const message = data.message;
+                    alert(message);
+                    const query = `?username=${username}`;
+                    navigate(`/${query}`);
                 }
             };
 
@@ -88,6 +93,7 @@ const Chessboard = () => {
 
             ws.onclose = () => {
                 console.log('WebSocket connection closed');
+                navigate('/');
             };
 
             setSocket(ws);
@@ -146,6 +152,15 @@ const Chessboard = () => {
         }
     };
 
+    const handleQuitGame = () => {
+        if (socket) {
+            socket.close();
+        }
+        const query = `?username=${username}`;
+        navigate(`/${query}`);
+    };
+    
+
     const isCellAvailable = (row, col) => {
         return availableMoves.some(([r, c]) => r === row && c === col);
     };
@@ -153,9 +168,26 @@ const Chessboard = () => {
     return (
         <div className="chessboard-body">
         <div className="chessboard">
-            <h1 style={{ color: 'Black', fontSize: '20px' }}>Player: {username != "" ? username : "Guest"}</h1>
-            <h1 style={{ color: 'Black', fontSize: '20px' }}>Game ID: {gameID}</h1>
-            {home ? <h3>Your Color: White</h3> : <h3>Your Color: Black</h3>}
+            
+        <div className="player-info">
+            <div className="info-row">
+                <span className="info-label">Player:</span>
+                <span className="info-value">{username !== "" ? username : "Guest"}</span>
+            </div>
+            <div className="info-row">
+                <span className="info-label">Game ID:</span>
+                <span className="info-value">{gameID}</span>
+            </div>
+            <div className="info-row">
+                <span className="info-label">Your Color:</span>
+                <span className="info-value">{home ? "White" : "Black"}</span>
+            </div>
+            <div className="info-row">
+                <span className="info-label">Turn Status:</span>
+                <span className="info-value">{(home && homeTurn) || (!home && !homeTurn) ? "Your Turn" : "Opponent's Turn"}</span>
+            </div>
+        </div>
+
             {board.map((row, i) => (
                 <div key={i} className="row">
                     {row.map((piece, j) => (
@@ -171,11 +203,15 @@ const Chessboard = () => {
                     ))}
                 </div>
             ))}
+
             <div id="notification-modal" className={gameStarted ? "notification-modal hidden" : "notification-modal"}>
             <h2>Waiting for the other player</h2>
             <h3>Game ID: {gameID}</h3>
+            <button className="quit-button" onClick={handleQuitGame}>Quit Game</button>
             </div>
-            {(home && homeTurn) ? <h2>Your Turn</h2> : (home && !homeTurn) ? <h2>Opponent's Turn</h2> : (!home && !homeTurn) ? <h2>Your Turn</h2> : <h2>Opponent's Turn</h2>}
+
+            <button className="quit-button" onClick={handleQuitGame}>Quit Game</button>
+
         </div>
         </div>
     );
