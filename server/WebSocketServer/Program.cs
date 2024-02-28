@@ -33,7 +33,7 @@ app.Map("/start-game", async (HttpContext context) =>
         string Origin = context.Request.Headers["Origin"];
         Console.WriteLine($"WebSocket connection established from host: {Origin} for start-game");
         
-        Player player = new Player(socket);
+        Player player = new Player(socket, gameEngine.getUser(username));
         Game game = new Game(player);
         gameEngine.addGame(game);
         if(username != null)
@@ -50,16 +50,22 @@ app.Map("/start-game", async (HttpContext context) =>
     }
 });
 
-app.Map("/join-game/{gameId}", async (HttpContext context) =>
+app.Map("/join-game", async (HttpContext context) =>
 {        
     if (context.WebSockets.IsWebSocketRequest)
     {
-        string gameId = context.Request.RouteValues["gameId"] as string;
-        if (string.IsNullOrEmpty(gameId))
+        string queryString = context.Request.QueryString.Value;
+        string username = "";
+        string gameId = "";
+
+        if (!string.IsNullOrEmpty(queryString))
         {
-            context.Response.StatusCode = 400;
-            return;
+            var queryCollection = System.Web.HttpUtility.ParseQueryString(queryString);
+            username = queryCollection["username"];
+            gameId = queryCollection["gameId"];
         }
+        Console.WriteLine("Username: " + username);
+        Console.WriteLine("Game ID: " + gameId);
 
         if(!gameEngine.gameExists(gameId))
         {
@@ -82,7 +88,7 @@ app.Map("/join-game/{gameId}", async (HttpContext context) =>
         string Origin = context.Request.Headers["Origin"];
         Console.WriteLine($"WebSocket connection established from host: {Origin} for join-game");
 
-        Player player = new Player(socket);
+        Player player = new Player(socket, gameEngine.getUser(username));
         gameEngine.addPlayerToGame(gameId, player);
         
         var handler = new WebSocketHandler();
@@ -107,13 +113,18 @@ app.Map("/last-game", async (HttpContext context) =>
             username = queryCollection["username"];
         }
 
-        Console.WriteLine("Username: " + username);
+        Game game = gameEngine.getLastGameForUser(username);  
+
+        if(game == null)
+        {
+            context.Response.StatusCode = 404;
+            return;
+        }
 
         var socket = await context.WebSockets.AcceptWebSocketAsync();
         Console.WriteLine("WebSocket for last-game connection established");
         
-        Player player = new Player(socket);
-        Game game = gameEngine.getLastGameForUser(username);  
+        Player player = new Player(socket, gameEngine.getUser(username));
         game.reconnectPlayer1(player);
         
         var handler = new WebSocketHandler();

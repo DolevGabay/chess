@@ -29,17 +29,12 @@ const Chessboard = () => {
             if (mode === 'start') {
                 socketURL = `ws://localhost:5226/start-game?username=${username}`;
             } else if (mode === 'join') {
-                socketURL = 'ws://localhost:5226/join-game';
+                socketURL = `ws://localhost:5226/join-game?username=${username}&gameId=${gameToJoin}`;
             } else if(mode === 'last-game') {
                 socketURL = `ws://localhost:5226/last-game?username=${username}`;
             } else {
                 console.error('Invalid mode:', mode);
                 return;
-            }
-
-            if (mode === 'join' && gameToJoin) {
-                const gameId = gameToJoin;
-                socketURL += `/${gameId}`;
             }
 
             const ws = new WebSocket(socketURL);
@@ -73,7 +68,9 @@ const Chessboard = () => {
                     }
                 } else if (data.action === 'gameOver') {
                     console.log('Game over:', data);
-                    alert('Game over');
+                    alert('Game over, the winner is: ' + data.winner);
+                    navigate('/');
+                    socket.close();
                 } else if (data.action === 'gameStarted'){
                     setGameStarted(true);
                 }
@@ -158,7 +155,7 @@ const Chessboard = () => {
         <div className="chessboard">
             <h1 style={{ color: 'Black', fontSize: '20px' }}>Player: {username != "" ? username : "Guest"}</h1>
             <h1 style={{ color: 'Black', fontSize: '20px' }}>Game ID: {gameID}</h1>
-            {home ? <h2>Your Color: White</h2> : <h2>Your Color: Black</h2>}
+            {home ? <h3>Your Color: White</h3> : <h3>Your Color: Black</h3>}
             {board.map((row, i) => (
                 <div key={i} className="row">
                     {row.map((piece, j) => (

@@ -72,6 +72,18 @@ public class GameEngine
         return users;
     }
 
+    public User getUser(string username)
+    {
+        foreach (User user in this.getUsers())
+        {
+            if (user.getUsername().ToString() == username)
+            {
+                return user;
+            }
+        }
+        return null;
+    }
+
     public void addUser(string username, string password)
     {
         User user = new User(username, password);

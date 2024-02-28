@@ -172,12 +172,20 @@ public class Game{
 
         if(moved == true && board.kingIsDead())
         {
-            Console.WriteLine("Game over here1");
             var gameOverInfo = new
             {
                 action = "gameOver",
                 winner = homeTurn ? "black" : "white"
             };
+
+            if(homeTurn)
+            {
+                player1.getUser().scorePoint();
+            }
+            else
+            {
+                player2.getUser().scorePoint();
+            }
 
             string gameOverJson = JsonSerializer.Serialize(gameOverInfo);
 

@@ -6,11 +6,13 @@ public class Player
     Guid PlayerId;
     WebSocket socket;
     public bool isHome;
+    User user;
 
-    public Player(WebSocket socket)
+    public Player(WebSocket socket, User userToPlayer)
     {
         this.PlayerId = Guid.NewGuid();
         this.socket = socket;
+        this.user = userToPlayer;
         Console.WriteLine("Player created with id: " + PlayerId);
     }
 
@@ -27,5 +29,10 @@ public class Player
     public void setHome(bool home)
     {
         isHome = home;
+    }
+
+    public User getUser()
+    {
+        return user;
     }
 }
